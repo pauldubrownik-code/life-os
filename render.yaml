@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: lebensuebersicht
+    runtime: node
+    repo: https://github.com/pauldubrownik-code/lebensuebersicht
+    branch: main
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production

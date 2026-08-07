@@ -1,34 +1,42 @@
 "use client";
-import { useState, useCallback } from "react";
-
-const HABITS = [
-  { id: "h1", label: "Habit 1 – simple toggle", category: "CATEGORY A" },
-  { id: "h2", label: "Habit 2 – grouped", category: "CATEGORY B", max: 3 },
-  { id: "h3", label: "Habit 3 – session", category: "CATEGORY B", max: 5 },
-  { id: "h4", label: "Habit 4 – session", category: "CATEGORY C", max: 4 },
-  { id: "h5", label: "Habit 5 – session", category: "CATEGORY C", max: 5 },
-  { id: "h6", label: "Habit 6 – session", category: "CATEGORY C", max: 4 },
-];
+import { useState, useEffect, useCallback } from "react";
+import {
+  getHabits,
+  getHabitProgress,
+  saveHabitProgress,
+  type Habit,
+} from "@/lib/store";
 
 export default function HabitsCard() {
-  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [progress, setProgress] = useState<Record<string, number>>({});
 
-  const toggle = useCallback((id: string, max?: number) => {
-    setCounts((prev) => {
-      const cur = prev[id] || 0;
-      const next = max ? (cur + 1) % (max + 1) : cur === 0 ? 1 : 0;
-      return { ...prev, [id]: next };
-    });
+  useEffect(() => {
+    setHabits(getHabits());
+    setProgress(getHabitProgress());
   }, []);
 
-  const total = HABITS.reduce((s, h) => s + (counts[h.id] || 0), 0);
-  const maxTotal = HABITS.reduce((s, h) => s + (h.max || 1), 0);
+  const toggle = useCallback(
+    (id: string, max: number) => {
+      setProgress((prev) => {
+        const cur = prev[id] || 0;
+        const next = max > 1 ? (cur + 1) % (max + 1) : cur === 0 ? 1 : 0;
+        const updated = { ...prev, [id]: next };
+        saveHabitProgress(updated);
+        return updated;
+      });
+    },
+    []
+  );
 
   // Group by category
-  const groups: Record<string, typeof HABITS> = {};
-  for (const h of HABITS) {
+  const groups: Record<string, Habit[]> = {};
+  for (const h of habits) {
     (groups[h.category] ??= []).push(h);
   }
+
+  const total = Object.values(progress).reduce((s, v) => s + v, 0);
+  const maxTotal = habits.reduce((s, h) => s + h.max, 0);
 
   return (
     <div className="panel space-y-3">
@@ -37,22 +45,32 @@ export default function HabitsCard() {
           03 // HABITS
         </span>
         <div className="flex items-center gap-2 mono text-xs">
-          <span className="text-[oklch(0.5_0.02_260)]">
-            DAILY SCORE
-          </span>
+          <span className="text-[oklch(0.5_0.02_260)]">DAILY SCORE</span>
           <span className="text-accent font-bold">{total}</span>
           <span className="text-[oklch(0.4_0.015_260)]">·</span>
-          <span className="text-[oklch(0.4_0.015_260)]">RESETS <span className="text-white">00:00</span></span>
+          <span className="text-[oklch(0.4_0.015_260)]">
+            MAX <span className="text-white">{maxTotal}</span>
+          </span>
         </div>
       </div>
 
+      {/* Progress bar */}
+      <div className="h-1 bg-[oklch(0.28_0.012_260/0.5)] rounded-full overflow-hidden">
+        <div
+          className="h-full bg-accent rounded-full transition-all duration-500"
+          style={{ width: `${maxTotal > 0 ? (total / maxTotal) * 100 : 0}%` }}
+        />
+      </div>
+
       <div className="space-y-3">
-        {Object.entries(groups).map(([cat, habits]) => (
+        {Object.entries(groups).map(([cat, hbits]) => (
           <div key={cat} className="space-y-1">
-            <span className="mono text-[0.55rem] tracking-[0.1em] text-[oklch(0.4_0.015_260)]">[ {cat} ]</span>
-            {habits.map((h) => {
-              const c = counts[h.id] || 0;
-              const isDone = h.max ? c >= h.max : c > 0;
+            <span className="mono text-[0.55rem] tracking-[0.1em] text-[oklch(0.4_0.015_260)]">
+              [ {cat} ]
+            </span>
+            {hbits.map((h) => {
+              const c = progress[h.id] || 0;
+              const isDone = h.max > 1 ? c >= h.max : c > 0;
               return (
                 <button
                   key={h.id}
@@ -64,12 +82,18 @@ export default function HabitsCard() {
                   }`}
                 >
                   <span className="text-xs">{h.label}</span>
-                  {h.max ? (
+                  {h.max > 1 ? (
                     <span className="mono text-[0.65rem] text-[oklch(0.5_0.02_260)]">
                       {c} / {h.max}
                     </span>
                   ) : (
-                    <span className={c > 0 ? "text-[oklch(0.62_0.18_150)]" : "text-[oklch(0.4_0.015_260)]"}>
+                    <span
+                      className={
+                        c > 0
+                          ? "text-[oklch(0.62_0.18_150)]"
+                          : "text-[oklch(0.4_0.015_260)]"
+                      }
+                    >
                       {c > 0 ? "✓" : "○"}
                     </span>
                   )}

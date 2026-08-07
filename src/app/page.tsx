@@ -1,11 +1,12 @@
 import TopRail from "@/components/TopRail";
 import OperatorCard from "@/components/OperatorCard";
-import SessionCard from "@/components/SessionCard";
-import HabitsCard from "@/components/HabitsCard";
-import NutritionCard from "@/components/NutritionCard";
-import CalendarCard from "@/components/CalendarCard";
-import BlockersCard from "@/components/BlockersCard";
 import FinancePulseCard from "@/components/FinancePulseCard";
+import KeyToDosCard from "@/components/KeyToDosCard";
+import GreetingBanner from "@/components/GreetingBanner";
+import HabitsCard from "@/components/HabitsCard";
+import CalendarCard from "@/components/CalendarCard";
+import GoalsCard from "@/components/GoalsCard";
+import NutritionCard from "@/components/NutritionCard";
 
 export default function Home() {
   return (
@@ -14,7 +15,7 @@ export default function Home() {
 
       {/* Capture Bar */}
       <div className="px-5 py-2 border-b border-[oklch(0.28_0.012_260/0.2)]">
-        <div className="max-w-4xl mx-auto flex items-center gap-3">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
           <span className="live-dot" />
           <span className="mono text-[0.55rem] tracking-[0.1em] text-[oklch(0.4_0.015_260)]">
             CAPTURE
@@ -31,22 +32,23 @@ export default function Home() {
       {/* 3-Column Dashboard Grid */}
       <main className="flex-1 px-5 py-4">
         <div className="max-w-7xl mx-auto grid grid-cols-12 gap-4">
-          {/* LEFT COLUMN (3/12) */}
+          {/* ─── LEFT COLUMN ─── */}
           <div className="col-span-12 md:col-span-3 space-y-4">
             <OperatorCard />
             <FinancePulseCard />
-            <BlockersCard />
+            <KeyToDosCard />
           </div>
 
-          {/* CENTER COLUMN (6/12) */}
+          {/* ─── CENTER COLUMN ─── */}
           <div className="col-span-12 md:col-span-6 space-y-4">
-            <SessionCard />
+            <GreetingBanner />
             <HabitsCard />
             <CalendarCard />
           </div>
 
-          {/* RIGHT COLUMN (3/12) */}
+          {/* ─── RIGHT COLUMN ─── */}
           <div className="col-span-12 md:col-span-3 space-y-4">
+            <GoalsCard />
             <NutritionCard />
           </div>
         </div>
